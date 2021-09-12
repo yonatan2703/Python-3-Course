@@ -38,9 +38,14 @@ player_items = [{"item": potion, "quantity": 5},
 player1 = Person("Valos:", 3260, 150, 300, 34, player_magic , player_items)
 player2 = Person("Nick: ", 4160, 150, 320, 34, player_magic , player_items)
 player3 = Person("Robot:", 3089, 150, 280, 34, player_magic , player_items)
-enemy = Person("Ork  ", 11000, 100, 525, 25, [], [])
+
+enemy1 = Person("Ork  ", 11000, 500, 525, 25, [], [])
+enemy2 = Person("Img  ", 2000, 100, 575, 325, [], [])
+enemy3 = Person("Img  ", 2000, 100, 575, 325, [], [])
 
 players = [player1, player2, player3]
+
+enemies = [enemy1, enemy2, enemy3]
 
 running = True
 i = 0
@@ -56,8 +61,8 @@ while running:
         player.get_stats()
         
     print("\n")
-
-    enemy.get_enemy_stats()
+    for enemy in enemies:
+        enemy.get_enemy_stats()
     
     for player in players:
 
@@ -67,8 +72,14 @@ while running:
 
         if index == 0:
             dmg = player.generate_damage()
-            enemy.take_damage(dmg)
-            print("You attacked for", dmg, "points of damage. Enemy HP:", enemy.get_hp())
+
+            enemy = player.choose_target(enemies)
+            enemies[enemy].take_damage(dmg)
+            print("You attacked " + enemies[enemy].name.replace("  ", "") + " for", dmg, "points of damage. Enemy HP:", enemies[enemy].get_hp())
+
+            if enemies[enemy].get_hp() == 0:
+                print(enemies[enemy].name.replace("  ", "") + " has died.")
+                del enemies[enemy]
         elif index == 1:
             player.choose_magic()
             magic_choice = int(input("    Choose magic: ")) - 1
@@ -92,8 +103,14 @@ while running:
                 print(bcolors.OKBLUE + "\n" + spell.name + " heals for", str(magic_dmg), "HP." + bcolors.ENDC)
 
             elif (spell.type == "black"):
-                enemy.take_damage(magic_dmg)
-                print(bcolors.OKBLUE + "\n" + spell.name + "deals", str(magic_dmg), "points of damage" + bcolors.ENDC)
+                enemy = player.choose_target(enemies)
+                enemies[enemy].take_damage(magic_dmg)
+
+                print(bcolors.OKBLUE + "\n" + spell.name + "deals", str(magic_dmg), "points of damage to " + enemies[enemy].name.replace("  ", "") + bcolors.ENDC)
+
+            if enemies[enemy].get_hp() == 0:
+                print(enemies[enemy].name.replace("  ", "") + " has died.")
+                del enemies[enemy]
 
         elif index == 2:
             player.choose_item()
@@ -126,22 +143,39 @@ while running:
                 print(bcolors.OKGREEN + "\n" + item.name + "fully restores HP/MP", str(item.prop), "HP" + bcolors.ENDC)
 
             elif item.type == "attack":
-                enemy.take_damage(item.prop)
-                print(bcolors.FAIL + "\n" + item.name + "deals", str(item.prop), "points of damage" + bcolors.ENDC)
+                enemy = player.choose_target(enemies)
+                enemies[enemy].take_damage(item.prop)
+
+                print(bcolors.FAIL + "\n" + item.name + "deals", str(item.prop), "points of damage to " + enemies[enemy].name.replace("  ", "") + bcolors.ENDC)
+
+            if enemies[enemy].get_hp() == 0:
+                print(enemies[enemy].name.replace("  ", "") + " has died.")
+                del enemies[enemy]
 
     enemy_choice = 1
     target = random.randrange(0,3)
-    enemy_dmg = enemy.generate_damage()
+    enemy_dmg = enemies[0].generate_damage()
 
     players[target].take_damage(enemy_dmg)
     print("Enemy attacks for", enemy_dmg)
 
+    defeated_enemies = 0
+    defeated_players = 0
 
-    if enemy.get_hp() == 0:
+    for player in players:
+        if player.get_hp() == 0:
+            defeated_players += 1 
+            
+    for enemy in enemies:
+        if enemy.get_hp() == 0:
+            defeated_enemies += 1 
+    
+    if defeated_enemies == 3:
         print(bcolors.OKGREEN + "you win!" + bcolors.ENDC)
         running = False
+
     elif player.get_hp() == 0:
-        print(bcolors.FAIL + "Your enemy has defeated you!" + bcolors.ENDC)
+        print(bcolors.FAIL + "Your enemies have defeated you!" + bcolors.ENDC)
 
 
     # running = False
